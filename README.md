@@ -68,15 +68,4 @@ bar to switch portals. A few things to try in the demo:
 5. **Officer → Officer Copilot**: paste the `RPT-xxxx` ID from step 3
    (optionally with a linked account ID) to generate an AI case summary.
 
-## Known limitations (be upfront about these with judges)
 
-- The scam-detection corpus and fraud-graph data are small and
-  **synthetic** — written for this prototype, not scraped from real cases.
-- The counterfeit-currency heuristic checks image quality/texture
-  signals, not real security-thread/microprint/watermark verification —
-  it is scaffolding for a trained YOLO pipeline, not a replacement for one.
-- The Citizen Assistant/Officer Copilot need `ANTHROPIC_API_KEY` set to
-  produce live multilingual/FIR-drafting output; otherwise they return a
-  clearly-labelled placeholder so the rest of the flow still works.
-- No authentication/RBAC is wired up yet — see the blueprint's Security
-  section for the intended approach.
