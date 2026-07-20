@@ -1,82 +1,370 @@
-# KshemOS — AI Operating System for Digital Public Safety
+<div align="center">
 
-A working hackathon prototype for **AI for Digital Public Safety: Defeating
-Counterfeiting, Fraud & Digital Arrest Scams** — see
-`KshemOS_Project_Blueprint.md` for the full vision, architecture, pitch
-deck outline, and demo script. This folder is the actual buildable code.
+# 🛡️ KshemOS — AI Operating System for Digital Public Safety
 
-## What's real vs. what's a stand-in
+**Stopping fraud before the money moves.**
 
-Everything below **runs end-to-end with zero paid services**, so the demo
-works even with no API keys configured. Each stand-in is commented in the
-code with a `PRODUCTION UPGRADE` note pointing at what a real deployment
-would use instead:
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react)](https://react.dev)
+[![Vite](https://img.shields.io/badge/build-Vite-646CFF?logo=vite)](https://vitejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/styling-Tailwind_CSS-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
+[![NetworkX](https://img.shields.io/badge/graph-NetworkX-2C5F7E)](https://networkx.org)
+[![Claude](https://img.shields.io/badge/LLM-Claude_API-FF7A00)](https://anthropic.com)
 
-| Agent | This prototype | Production upgrade |
+**KshemOS** (Sanskrit: *kṣema* — welfare, safety, protection) is an AI operating system that sits between citizens, banks, telecom operators, and law enforcement — **catching digital arrest scams, counterfeit currency, and fraud rings in the moment they happen**, not after the FIR is filed.
+
+> 📖 See [`KshemOS_Project_Blueprint.md`](./KshemOS_Project_Blueprint.md) for the full product vision, pitch deck outline, architecture diagrams, and hackathon development plan. This repository contains the actual buildable code.
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features — The 5 AI Agents](#features--the-5-ai-agents)
+- [Tech Stack](#tech-stack)
+- [Repository Layout](#repository-layout)
+- [Architecture](#architecture)
+- [API Endpoints](#api-endpoints)
+- [Frontend Pages](#frontend-pages)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+- [Environment Variables](#environment-variables)
+- [Demo Guide](#demo-guide)
+- [Running Tests](#running-tests)
+- [What's Real vs. What's a Stand-In](#whats-real-vs-whats-a-stand-in)
+- [Project Status: Built vs. Roadmap](#project-status-built-vs-roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+Digital arrest scams, counterfeit currency, and organised fraud rings cost Indian citizens **over ₹10,000 crore annually** (NCRB/RBI reports). Current systems react *after* the money moves — after the OTP is shared, after the bank transfer is confirmed, after the FIR is filed.
+
+**KshemOS changes this by intervening in real time.**
+
+### The Core Idea: Live Scam Intervention Score
+
+During a live call with a "CBI officer" or while scanning a suspicious QR code, KshemOS scores the interaction in real time using:
+
+1. **Audio analysis** (keyword spotting + transcript similarity against known scam scripts)
+2. **Image forensics** (counterfeit note detection via edge/tone/texture heuristics)
+3. **Fraud graph intelligence** (network link analysis across accounts, devices, and victims)
+
+If the risk threshold is crossed, the system pushes an intervention — **before the citizen transfers money, not after**.
+
+---
+
+## Features — The 5 AI Agents
+
+| Agent | Purpose | Input | Output | Pipeline |
+|---|---|---|---|---|
+| **Digital Arrest Agent** | Live scam-call risk scoring | Transcript / audio text | Risk score 0–100, flagged phrases, action recommendation | Keyword + bag-of-words similarity against synthetic scam corpus |
+| **Counterfeit Currency Agent** | Currency note authenticity check | Photo of note (JPEG/PNG) | Verdict (likely_genuine/suspicious/inconclusive), confidence, reasons | Pillow/numpy image heuristics (edge density, texture, sharpness, resolution) |
+| **Fraud Graph Agent** | Link accounts/phones/devices into rings, flag mule accounts | Account ID | Ring ID, mule probability, connected accounts, shared signals | In-memory `networkx` graph seeded with synthetic accounts |
+| **Citizen Assistant** | Multilingual explainer, guided reporting, FIR drafting | Text question + language preference | Plain-language answer or draft FIR | Claude API (falls back to rule-based placeholder if no key configured) |
+| **Officer Copilot** | Case summarisation, next-step recommendation | Report ID + optional account ID | Case summary, priority, suggested next steps | Claude API over structured case + graph data |
+
+---
+
+## Tech Stack
+
+### Production Vision
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite 8, Tailwind CSS 4, Oxlint |
+| **Backend** | Python 3.11+, FastAPI, Uvicorn |
+| **AI / ML** | Whispr (ASR) → Sentence-Transformers + FAISS (scam-script similarity), LightGBM/XGBoost (risk scoring), YOLOv11 + OpenCV (currency CV) |
+| **Graph** | Neo4j + Graph Neural Networks (production) / NetworkX (prototype) |
+| **LLM** | Anthropic Claude API (Sonnet 5) |
+| **Database** | PostgreSQL (relational), Neo4j (graph), FAISS/Chroma (vector) |
+| **Streaming** | Apache Kafka / Redis (event stream, caching) |
+| **Auth** | Firebase Auth / JWT (RBAC: citizen/officer/bank/telecom) |
+| **Infra** | Docker, Kubernetes, AWS/Azure |
+
+### What's Actually Running in This Repo
+
+| Component | Implementation |
+|---|---|
+| **Frontend build** | Vite 8 + React 19 + Tailwind CSS 4 |
+| **Frontend lint** | `oxlint` (oxlintrc.json) |
+| **Backend server** | FastAPI 0.115 + Uvicorn 0.30 |
+| **Scam detection** | Keyword scoring + bag-of-words cosine similarity (no model downloads) |
+| **Currency scan** | Pillow 10.4 + numpy 1.26 image heuristics |
+| **Fraud graph** | NetworkX 3.3 in-memory graph |
+| **LLM integration** | Anthropic SDK 0.34 (fallback to placeholder if no key set) |
+| **Data store** | In-memory Python dict (stand-in for PostgreSQL) |
+| **API docs** | Auto-generated via FastAPI — `http://localhost:8000/docs` |
+| **Email** | @emailjs/browser (optional, for report confirmation) |
+
+---
+
+## Repository Layout
+
+```
+kshemos/
+├── backend/                          # FastAPI service — 5 agents, one app
+│   ├── requirements.txt              # Python dependencies
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py                   # FastAPI app factory + CORS + router includes
+│   │   ├── models.py                 # Pydantic request/response models
+│   │   ├── data/
+│   │   │   ├── __init__.py
+│   │   │   ├── scam_corpus.py        # Synthetic scam-script corpus + keyword lists
+│   │   │   └── seed_graph.py         # Synthetic fraud-graph seed data
+│   │   ├── routers/
+│   │   │   ├── __init__.py
+│   │   │   ├── scam.py               # POST /api/scam/analyze
+│   │   │   ├── currency.py           # POST /api/currency/scan
+│   │   │   ├── graph.py              # GET /api/graph/ring/{account_id}
+│   │   │   ├── citizen.py            # POST /api/citizen/ask, /api/citizen/report
+│   │   │   ├── officer.py            # GET /api/officer/case/{report_id}
+│   │   │   └── llm.py                # POST /api/llm/chat
+│   │   └── services/
+│   │       ├── __init__.py
+│   │       ├── scam_detection.py     # Keyword scoring + BOW similarity engine
+│   │       ├── currency_scan.py      # Pillow/numpy image heuristic pipeline
+│   │       ├── fraud_graph.py        # NetworkX graph query + mule scoring
+│   │       ├── claude_client.py      # Anthropic API wrapper (with placeholder fallback)
+│   │       ├── local_llm.py          # Local LLM endpoint (llama-cpp-python)
+│   │       └── store.py              # In-memory report store
+│
+├── frontend/                         # React + Vite + Tailwind — Citizen & Officer UIs
+│   ├── .env.example                  # Environment variable template
+│   ├── index.html                    # SPA entry point
+│   ├── package.json                  # Node dependencies & scripts
+│   ├── vite.config.js                # Vite configuration (React + Tailwind plugins)
+│   ├── public/
+│   │   ├── favicon.svg               # Favicon
+│   │   └── icons.svg                 # SVG icon sprite
+│   └── src/
+│       ├── main.jsx                  # React DOM root
+│       ├── index.css                 # Tailwind directives + global styles
+│       ├── App.jsx                   # Shell + portal routing (13+ views)
+│       ├── api.js                    # API abstraction (calls local rule engine)
+│       ├── ruleEngine.js             # Client-side rule engine (scam, currency, graph, report)
+│       ├── scamRulePlugins.js        # Plugin architecture for scam rule extensions
+│       ├── ruleEngine.test.js        # Unit tests for the rule engine
+│       ├── assets/
+│       │   ├── hero.png              # Home page hero image
+│       │   ├── react.svg             # React logo
+│       │   └── vite.svg              # Vite logo
+│       └── components/
+│           ├── Shell.jsx             # App shell — nav, footer, portal toggle
+│           ├── HomePage.jsx          # Landing page
+│           ├── CitizenPortal.jsx     # Main citizen dashboard
+│           ├── OfficerCommandCenter.jsx  # Officer dashboard
+│           ├── ScamIntelligencePage.jsx  # Live scam analysis (rule engine output)
+│           ├── FraudGraphView.jsx        # Fraud graph visualisation
+│           ├── RiskGauge.jsx             # Live risk score gauge
+│           ├── AwarenessPage.jsx     # Awareness resources
+│           ├── MotivationPage.jsx    # Project motivation
+│           ├── AboutPage.jsx         # About KshemOS
+│           ├── ContactPage.jsx       # Contact / report form
+│           ├── HowItWorksPage.jsx    # How it works explainer
+│           ├── ScamExamplesPage.jsx  # Real scam example library (2,200+ synthetic scenarios)
+│           ├── SafetyTipsPage.jsx    # Safety best practices
+│           └── ThreatLibraryPage.jsx # Threat pattern library
+│
+├── KshemOS_Project_Blueprint.md      # Full vision, architecture, pitch deck, dev plan
+├── README.md                         # This file
+├── TODO.md                           # Current task tracking
+└── .gitignore                        # Git ignore rules
+```
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Clients
+        CIT[Citizen Portal]
+        OFF[Officer Dashboard]
+    end
+
+    subgraph "Backend — FastAPI"
+        GW[API Gateway + CORS]
+        SCAM[Digital Arrest Agent]
+        CUR[Counterfeit Agent]
+        GRAPH[Fraud Graph Agent]
+        CITIZEN[Citizen Assistant]
+        OFFICER[Officer Copilot]
+        LLM[LLM Bridge]
+    end
+
+    subgraph "AI Services"
+        CLAUDE[Claude API<br/>multilingual / FIR / summaries]
+        LOCAL[Local LLM<br/>llama-cpp-python]
+        RULES[Rule Engine<br/>keyword + BOW similarity]
+        CV[Image Heuristics<br/>Pillow + numpy]
+        NX[NetworkX Graph<br/>mule scoring]
+    end
+
+    subgraph "Data"
+        MEM[(In-Memory Store<br/>Postgres stand-in)]
+        CORPUS[Scam Corpus<br/>synthetic scripts]
+        SYNTH[Fraud Seed<br/>synthetic accounts]
+    end
+
+    CIT --> GW
+    OFF --> GW
+    GW --> SCAM & CUR & GRAPH & CITIZEN & OFFICER
+    SCAM --> RULES --> CORPUS
+    SCAM --> CLAUDE
+    CUR --> CV
+    GRAPH --> NX --> SYNTH
+    CITIZEN --> CLAUDE
+    CITIZEN --> RULES
+    OFFICER --> CLAUDE
+    OFFICER --> MEM
+    LLM --> CLAUDE & LOCAL
+```
+
+> This is the **production architecture** simplified for the hackathon prototype. Each service runs in the same FastAPI process; the module boundaries are designed so each agent can be extracted into a standalone microservice without changing its public API contract.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Agent | Description |
+|---|---|---|---|
+| `GET` | `/` | Health | Root health check — returns service name, status, docs URL |
+| `POST` | `/api/scam/analyze` | Digital Arrest | Analyzes a transcript for scam signals. **Request:** `{ transcript, caller_claims_to_be?, caller_number? }` → **Response:** `{ risk_score, risk_band, matched_patterns, recommendation }` |
+| `POST` | `/api/currency/scan` | Counterfeit | Scans a currency note image. Multipart form upload → **Response:** `{ verdict, confidence, reasons[], signals{} }` |
+| `GET` | `/api/graph/ring/{account_id}` | Fraud Graph | Looks up an account in the fraud graph. → **Response:** `{ account_id, is_flagged, mule_probability, ring_id, connected_accounts[] }` |
+| `POST` | `/api/citizen/ask` | Citizen Assistant | Asks a safety question. **Request:** `{ question, language }` → **Response:** `{ answer }` |
+| `POST` | `/api/citizen/report` | Citizen Assistant | Submits a fraud/scam report. **Request:** `{ reporter_name, language, category, description }` → **Response:** `{ report_id, acknowledgement, draft_fir }` |
+| `GET` | `/api/officer/case/{report_id}` | Officer Copilot | Generates case summary. **Query:** `?account_id=ACC-XXXX` → **Response:** `{ case_id, priority, summary, suggested_next_steps[] }` |
+| `POST` | `/api/llm/chat` | LLM Bridge | Raw LLM chat endpoint. **Request:** `{ prompt, max_tokens }` → **Response:** `{ text }` |
+| `GET` | `/docs` | — | Swagger UI — interactive API documentation |
+
+All API routers are prefixed under FastAPI and auto-documented at `http://localhost:8000/docs` when the backend is running.
+
+---
+
+## Frontend Pages
+
+| Route (`activeView`) | Component | Description |
 |---|---|---|
-| Digital Arrest Agent | Keyword + bag-of-words similarity scoring against a small synthetic scam-script corpus | Whisper for live audio → Sentence-Transformers + FAISS over a large, continuously-updated corpus |
-| Counterfeit Currency Agent | Pillow/numpy image heuristics (edge density, texture, sharpness, resolution) | YOLOv11 note/region detector + OCR + reference feature-matching |
-| Fraud Graph Agent | In-memory `networkx` graph, seeded with synthetic accounts | Neo4j + Graph Neural Network mule-probability model |
-| Citizen Assistant / Officer Copilot | Claude API (falls back to a placeholder string if no key is set) | Same, at production scale with retrieval over full case data |
+| `home` | `HomePage.jsx` | Landing page with hero, call-to-action, feature highlights |
+| `portal` (citizen) | `CitizenPortal.jsx` | Main citizen dashboard — scam check, currency scan, report incident |
+| `portal` (officer) | `OfficerCommandCenter.jsx` | Officer command center — graph lookup, case review, copilot |
+| `intelligence` | `ScamIntelligencePage.jsx` | Live scam analysis with entity extraction, evidence spans, score breakdown, timeline |
+| `rule-library` | `ThreatLibraryPage.jsx` | Browse threat pattern library with categorised scam examples |
+| `scam-examples` | `ScamExamplesPage.jsx` | Real-world scam scenario library (2,200+ synthetic patterns) |
+| `fraud-graph` | `FraudGraphView.jsx` | Visual fraud graph explorer |
+| `safety-tips` | `SafetyTipsPage.jsx` | Best practices for digital safety |
+| `awareness` | `AwarenessPage.jsx` | Public awareness resources |
+| `motivation` | `MotivationPage.jsx` | Why KshemOS exists — problem statement |
+| `about` | `AboutPage.jsx` | Project background and team |
+| `how-it-works` | `HowItWorksPage.jsx` | Technical explainer |
+| `contact` | `ContactPage.jsx` | Contact form and incident reporting |
 
-## Repository layout
+The app shell (`Shell.jsx`) provides the top-bar portal toggle (Citizen / Officer) and navigation across all views.
 
-```
-rakshakos/
-  backend/     FastAPI service — the 5 agents, one app, one process
-  frontend/    React + Vite + Tailwind — Citizen Portal & Officer Command Center
-```
+---
 
-## Run the backend
+## Getting Started
+
+### Prerequisites
+
+- **Python** 3.11+ (3.12+ recommended)
+- **Node.js** 20+ (LTS)
+- **npm** 10+ (ships with Node.js)
+
+### Backend Setup
 
 ```bash
 cd backend
-python3 -m venv .venv && source .venv/bin/activate   # optional but recommended
+
+# Create and activate virtual environment (recommended)
+python3 -m venv .venv
+source .venv/bin/activate   # On Windows: .venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...   # optional — omit to use placeholder responses
+
+# (Optional) Set your Claude API key for live AI responses
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# Start the development server
 uvicorn app.main:app --reload --port 8000
 ```
 
-- API docs: http://localhost:8000/docs
-- Health check: http://localhost:8000/
+- **API docs (Swagger):** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Health check:** [http://localhost:8000/](http://localhost:8000/)
 
-## Run the frontend
+### Frontend Setup
 
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
-cp .env.example .env   # edit VITE_API_URL if your backend isn't on localhost:8000
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env if your backend is not running on localhost:8000
+
+# Start the development server
 npm run dev
 ```
 
-Open the printed local URL. Use the **Citizen / Officer** toggle in the top
-bar to switch portals. A few things to try in the demo:
+Open the URL printed in the terminal (typically `http://localhost:5173`).
 
-1. **Citizen → Digital Arrest Agent**: the transcript box is pre-filled with
-   a synthetic scam script — press "Check this call" to see the risk gauge
-   animate up to a critical score, then edit the text to something benign
-   (e.g. "calling to confirm your loan appointment") and re-run it to see
-   the score drop.
-2. **Citizen → Counterfeit Currency Agent**: upload any photo — sharp,
-   well-lit, high-resolution photos score higher confidence; blurry/small
-   images get flagged as suspicious/inconclusive.
-3. **Citizen → Report form**: submit a report, note the returned `RPT-xxxx`
-   ID.
-4. **Officer → Fraud Graph Agent**: try the sample account chips
-   (`ACC-1002`, `ACC-1009` are seeded as likely mule accounts, linked to
-   flagged accounts `ACC-1001` / `ACC-1008`).
-5. **Officer → Officer Copilot**: paste the `RPT-xxxx` ID from step 3
-   (optionally with a linked account ID) to generate an AI case summary.
+> **Note:** The frontend `api.js` is wired to call a local rule engine (`ruleEngine.js`) by default, so **everything works without a running backend**. For full Claude-powered responses, start the backend and set `VITE_API_URL=http://localhost:8000` in your `.env`.
 
-## Known limitations 
+### Production Build
 
-- The scam-detection corpus and fraud-graph data are small and
-  **synthetic** — written for this prototype, not scraped from real cases.
-- The counterfeit-currency heuristic checks image quality/texture
-  signals, not real security-thread/microprint/watermark verification —
-  it is scaffolding for a trained YOLO pipeline, not a replacement for one.
-- The Citizen Assistant/Officer Copilot need `ANTHROPIC_API_KEY` set to
-  produce live multilingual/FIR-drafting output; otherwise they return a
-  clearly-labelled placeholder so the rest of the flow still works.
-- No authentication/RBAC is wired up yet — see the blueprint's Security
-  section for the intended approach.
+```bash
+cd frontend
+npm run build         # Outputs to frontend/dist/
+npm run preview       # Preview the production build locally
+```
+
+---
+
+## Environment Variables
+
+### Backend (`backend/`)
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `ANTHROPIC_API_KEY` | No | — | Claude API key. Omit to use placeholder responses for Citizen Assistant and Officer Copilot |
+
+### Frontend (`frontend/` — set in `.env`)
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `VITE_API_URL` | No | `''` (empty) | Backend API base URL (e.g. `http://localhost:8000`). Leave empty to use the local rule engine only |
+| `VITE_EMAILJS_SERVICE_ID` | No | — | EmailJS service ID for report confirmation emails |
+| `VITE_EMAILJS_TEMPLATE_ID` | No | — | EmailJS template ID |
+| `VITE_EMAILJS_PUBLIC_KEY` | No | — | EmailJS public key |
+
+---
+
+## Demo Guide
+
+Try these scenarios to explore all five agents. The demo runs **end-to-end with zero paid services** — no API keys required.
+
+### 1. Digital Arrest Agent — Scam Call Analysis
+
+1. Go to **Citizen Portal** (top-bar toggle set to "Citizen")
+2. Navigate to the **Scam Intelligence** page (`intelligence` view)
+3. The transcript box is pre-filled with a synthetic scam script
+4. Click **"Check this call"** — the risk gauge animates to **critical (75+)**
+5. Review the detailed output: entity chips (OTP, Aadhaar, amounts), evidence spans, score breakdown, tactic timeline, and scam type classification
+6. Edit the text to something benign (e.g. *"calling to confirm your loan appointment at 3 PM"*) and re-run — the score drops to **low**
+
+### 2. Counterfeit Currency Agent — Note Scanner
+
+1. In the **Citizen Portal**, upload any photo (JPEG/PNG)

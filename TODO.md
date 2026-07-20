@@ -1,15 +1,24 @@
-- [ ] Inspect current scam detection rule engine (frontend) and frontend intelligence UI.
 
-- [x] Implement additional scam analysis outputs in frontend ruleEngine.js (no backend changes):
-  - [x] entity extraction (OTP/Aadhaar/bank/UPI/amounts/orgs/dates)
-  - [x] evidence span extraction (matched phrases with context)
-  - [ ] improved classification categories (scam_types + motive)
-  - [x] timeline of tactics (ordered asks/threats/payments)
-  - [x] detailed score breakdown (per-signal contributions + weights)
-- [ ] (Removed) Backend schema updates not required because everything stays frontend rule-based.
+# KshemOS Tasks
 
-- [x] Update frontend ScamIntelligencePage.jsx to render new sections (chips, evidence inspector, breakdown, timeline, entities) while preserving existing UI.
-- [x] Run backend + frontend smoke checks (start servers, run analysis manually).
+---
+
+## README Improvement
+
+- [x] Plan the README rewrite with comprehensive sections
+- [ ] **Header & badges** — add project badges, tagline, brand identity
+- [ ] **Overview section** — expanded product vision backed by blueprint
+- [ ] **Features section** — 5 AI agents as feature cards with agent table
+- [ ] **Tech stack table** — comprehensive language/framework/tool overview
+- [ ] **Repository layout** — full directory tree showing backend + frontend
+- [ ] **Architecture diagram** — Mermaid diagram reference
+- [ ] **API endpoints reference** — key routes with descriptions
+- [ ] **Frontend pages** — list all available views/routes
+- [ ] **Enhanced setup** — env variable reference table, `.env.example` mention, testing commands
+- [ ] **Structured demo guide** — walkthrough across all 5 agents
+- [ ] **Built vs. Roadmap table** — honest project status
+- [ ] **Contributing guidelines** — basic contribution flow
+- [ ] **License & footer** — MIT license, links to blueprint / docs
 
 
 
