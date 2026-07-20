@@ -1,4 +1,18 @@
+import emailjs from '@emailjs/browser';
+import {
+  analyzeScamTranscript as analyzeLocally,
+  scanCurrencyImageLocally,
+  askCitizenAssistantLocally,
+  submitCitizenReportLocally,
+  lookupFraudRingLocally,
+  getCaseSummaryLocally,
+  getRuleLibrarySamplesLocally,
+} from './ruleEngine.js';
+
 const BASE_URL = import.meta.env.VITE_API_URL || '';
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '';
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '';
 
 async function handle(res) {
   if (!res.ok) {
@@ -15,53 +29,58 @@ async function handle(res) {
 }
 
 export async function analyzeScamTranscript({ transcript, callerClaimsToBe, callerNumber }) {
-  const res = await fetch(`${BASE_URL}/api/scam/analyze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      transcript,
-      caller_claims_to_be: callerClaimsToBe || null,
-      caller_number: callerNumber || null,
-    }),
-  });
-  return handle(res);
+  return analyzeLocally(transcript, callerClaimsToBe);
 }
 
 export async function scanCurrencyImage(file) {
-  const form = new FormData();
-  form.append('image', file);
-  const res = await fetch(`${BASE_URL}/api/currency/scan`, {
-    method: 'POST',
-    body: form,
-  });
-  return handle(res);
+  return scanCurrencyImageLocally(file);
 }
 
 export async function lookupFraudRing(accountId) {
-  const res = await fetch(`${BASE_URL}/api/graph/ring/${encodeURIComponent(accountId)}`);
-  return handle(res);
+  return lookupFraudRingLocally(accountId);
 }
 
 export async function askCitizenAssistant({ question, language }) {
-  const res = await fetch(`${BASE_URL}/api/citizen/ask`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, language }),
-  });
-  return handle(res);
+  return { answer: askCitizenAssistantLocally(question, language) };
 }
 
 export async function submitCitizenReport(payload) {
-  const res = await fetch(`${BASE_URL}/api/citizen/report`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  return handle(res);
+  return submitCitizenReportLocally(payload);
+}
+
+export async function sendReportConfirmationEmail({ reportId, reporterName, recipientEmail, category, description, acknowledgement }) {
+  if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+    return {
+      success: false,
+      message: 'EmailJS configuration is missing. Set VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY.',
+    };
+  }
+
+  try {
+    const templateParams = {
+      report_id: reportId,
+      reporter_name: reporterName,
+      recipient_email: recipientEmail,
+      report_category: category,
+      report_description: description,
+      acknowledgement,
+    };
+
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY);
+
+    return { success: true, message: 'Confirmation email sent successfully.' };
+  } catch (error) {
+    return {
+      success: false,
+      message: error?.text || error?.message || 'EmailJS failed to send confirmation.',
+    };
+  }
+}
+
+export async function getRuleLibrarySamples(limit) {
+  return getRuleLibrarySamplesLocally(limit);
 }
 
 export async function getCaseSummary(reportId, accountId) {
-  const qs = accountId ? `?account_id=${encodeURIComponent(accountId)}` : '';
-  const res = await fetch(`${BASE_URL}/api/officer/case/${encodeURIComponent(reportId)}${qs}`);
-  return handle(res);
+  return getCaseSummaryLocally(reportId, accountId);
 }

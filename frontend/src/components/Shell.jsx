@@ -10,11 +10,11 @@ function ShieldMark({ size = 28 }) {
   );
 }
 
-export default function Shell({ portal, setPortal, children }) {
+export default function Shell({ portal, setPortal, activeView, setActiveView, children }) {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-[var(--paper-line)] bg-white/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ShieldMark />
             <div>
@@ -24,23 +24,58 @@ export default function Shell({ portal, setPortal, children }) {
               </div>
             </div>
           </div>
-          <div className="flex bg-[var(--paper)] border border-[var(--paper-line)] rounded-full p-1 text-sm">
-            <button
-              onClick={() => setPortal('citizen')}
-              className={`px-3 py-1 rounded-full font-semibold transition-colors ${
-                portal === 'citizen' ? 'bg-[var(--ink)] text-white' : 'text-[var(--ink-text)]/60'
-              }`}
-            >
-              Citizen
-            </button>
-            <button
-              onClick={() => setPortal('officer')}
-              className={`px-3 py-1 rounded-full font-semibold transition-colors ${
-                portal === 'officer' ? 'bg-[var(--ink)] text-white' : 'text-[var(--ink-text)]/60'
-              }`}
-            >
-              Officer
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 bg-[var(--paper)] border border-[var(--paper-line)] rounded-full p-1 text-sm">
+              {[
+                { key: 'home', label: 'Home' },
+                { key: 'intelligence', label: 'Intelligence' },
+                { key: 'rule-library', label: 'Rule Library' },
+                { key: 'awareness', label: 'Awareness' },
+                { key: 'how-it-works', label: 'How It Works' },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveView(item.key)}
+                  className={`px-3 py-1 rounded-full font-semibold transition-all duration-200 ${
+                    activeView === item.key ? 'bg-[var(--ink)] text-white shadow-sm' : 'text-[var(--ink-text)]/60 hover:bg-white'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 bg-[var(--paper)] border border-[var(--paper-line)] rounded-full p-1 text-sm">
+              <button
+                onClick={() => {
+                  setActiveView('portal');
+                  setPortal('citizen');
+                }}
+                className={`px-3 py-1 rounded-full font-semibold transition-all duration-200 ${
+                  activeView === 'portal' && portal === 'citizen' ? 'bg-[var(--ink)] text-white shadow-sm' : 'text-[var(--ink-text)]/60 hover:bg-white'
+                }`}
+              >
+                Verify
+              </button>
+              <button
+                onClick={() => {
+                  setActiveView('officer');
+                  setPortal('officer');
+                }}
+                className={`px-3 py-1 rounded-full font-semibold transition-all duration-200 ${
+                  activeView === 'officer' ? 'bg-[var(--ink)] text-white shadow-sm' : 'text-[var(--ink-text)]/60 hover:bg-white'
+                }`}
+              >
+                Officer
+              </button>
+              <button
+                onClick={() => setActiveView('contact')}
+                className={`px-3 py-1 rounded-full font-semibold transition-all duration-200 ${
+                  activeView === 'contact' ? 'bg-[var(--ink)] text-white shadow-sm' : 'text-[var(--ink-text)]/60 hover:bg-white'
+                }`}
+              >
+                Contact
+              </button>
+            </div>
           </div>
         </div>
       </header>

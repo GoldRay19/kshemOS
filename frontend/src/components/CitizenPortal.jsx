@@ -1,11 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RiskGauge from './RiskGauge';
-import { analyzeScamTranscript, scanCurrencyImage, askCitizenAssistant, submitCitizenReport } from '../api';
+import { analyzeScamTranscript, scanCurrencyImage, askCitizenAssistant, submitCitizenReport, sendReportConfirmationEmail } from '../api';
 
 const LANGUAGES = ['English', 'Hindi', 'Bengali', 'Tamil', 'Telugu', 'Marathi', 'Kannada'];
 
-const SAMPLE_TRANSCRIPT =
-  "This is the CBI. A parcel with your Aadhaar number has been seized. You are under digital arrest, do not disconnect this call, and transfer the verification amount immediately or a warrant will be issued.";
+const SAMPLE_CASES = [
+  {
+    id: 'digital-arrest',
+    label: 'Digital arrest',
+    transcript:
+      'This is the CBI. A parcel with your Aadhaar number has been seized. You are under digital arrest, do not disconnect this call, and transfer the verification amount immediately or a warrant will be issued.',
+    claim: 'CBI officer',
+  },
+  {
+    id: 'courier-fraud',
+    label: 'Fake courier',
+    transcript:
+      'We are from the customs office. Your parcel has illegal items and you must pay the fee now or your account will be frozen.',
+    claim: 'customs officer',
+  },
+  {
+    id: 'bank-otp',
+    label: 'Bank OTP scam',
+    transcript:
+      'Your bank account is under review. Share the OTP now to verify your identity and avoid suspension.',
+    claim: 'bank officer',
+  },
+  {
+    id: 'benign',
+    label: 'Benign call',
+    transcript:
+      'I am calling to confirm your loan appointment for tomorrow afternoon. Please bring your documents to the branch.',
+    claim: 'bank officer',
+  },
+];
+
+const SAMPLE_TRANSCRIPT = SAMPLE_CASES[0].transcript;
 
 function SectionCard({ eyebrow, title, children }) {
   return (
@@ -43,6 +73,21 @@ function ScamCheck() {
         Paste the call transcript (or what you remember of it). We'll score it in real time —
         this never asks you for an OTP, password, or bank details.
       </p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {SAMPLE_CASES.map((sample) => (
+          <button
+            key={sample.id}
+            onClick={() => {
+              setTranscript(sample.transcript);
+              setClaim(sample.claim);
+              setResult(null);
+            }}
+            className="rounded-full border border-[var(--paper-line)] px-3 py-1 text-xs font-semibold text-[var(--ink)] hover:border-[var(--saffron)]"
+          >
+            {sample.label}
+          </button>
+        ))}
+      </div>
       <textarea
         className="w-full h-28 rounded-lg border border-[var(--paper-line)] p-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--saffron)]"
         value={transcript}
@@ -64,18 +109,36 @@ function ScamCheck() {
       {error && <p className="text-sm text-[var(--alert)] mt-2">{error}</p>}
 
       {result && (
-        <div className="mt-5 flex flex-col md:flex-row gap-5 items-center">
-          <RiskGauge score={result.risk_score} band={result.risk_band} />
-          <div className="flex-1 text-sm">
-            <p className="font-semibold mb-1">{result.recommendation}</p>
-            <p className="text-[var(--ink-text)]/70 mb-2">{result.explanation}</p>
-            {result.matched_patterns.length > 0 && (
-              <ul className="list-disc list-inside space-y-0.5 text-[var(--ink-text)]/80">
-                {result.matched_patterns.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            )}
+        <div className="mt-5 rounded-2xl border border-[var(--paper-line)] bg-[var(--paper)] p-4 shadow-sm">
+          <div className="flex flex-col md:flex-row gap-5 items-start">
+            <RiskGauge score={result.risk_score} band={result.risk_band} />
+            <div className="flex-1 text-sm">
+              <div className="mb-2 inline-flex items-center rounded-full border border-[var(--saffron)]/25 bg-[var(--saffron)]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--saffron)]">
+                {result.risk_band} risk assessment
+              </div>
+              <p className="font-semibold mb-1">{result.recommendation}</p>
+              <p className="text-[var(--ink-text)]/70 mb-3">{result.explanation}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-[var(--paper-line)] bg-white p-3">
+                  <div className="text-xs font-mono uppercase tracking-[0.2em] text-[var(--ink-text)]/50 mb-2">Evidence summary</div>
+                  <ul className="space-y-1 text-[var(--ink-text)]/80">
+                    {result.matched_patterns.map((p) => (
+                      <li key={p} className="text-sm">• {p}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-xl border border-[var(--paper-line)] bg-white p-3">
+                  <div className="text-xs font-mono uppercase tracking-[0.2em] text-[var(--ink-text)]/50 mb-2">Score breakdown</div>
+                  <ul className="space-y-1 text-[var(--ink-text)]/80">
+                    <li className="text-sm">Threats: {result.evidence?.score_breakdown?.threat ?? 0}</li>
+                    <li className="text-sm">Urgency: {result.evidence?.score_breakdown?.urgency ?? 0}</li>
+                    <li className="text-sm">Secrecy: {result.evidence?.score_breakdown?.secrecy ?? 0}</li>
+                    <li className="text-sm">Payment: {result.evidence?.score_breakdown?.payment ?? 0}</li>
+                    <li className="text-sm">Pattern strength: {result.evidence?.score_breakdown?.pattern_strength ?? 0}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -208,19 +271,22 @@ function Assistant() {
   );
 }
 
-function ReportForm() {
+function ReportForm({ addReport }) {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [category, setCategory] = useState('scam_call');
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState('English');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [emailStatus, setEmailStatus] = useState(null);
 
   async function submit() {
     if (!name.trim() || !description.trim()) return;
     setLoading(true);
     setError(null);
+    setEmailStatus(null);
     try {
       const res = await submitCitizenReport({
         reporter_name: name,
@@ -229,6 +295,29 @@ function ReportForm() {
         description,
       });
       setResult(res);
+      addReport({
+        report_id: res.report_id,
+        reporter_name: name,
+        email,
+        category,
+        description,
+        acknowledgement: res.acknowledgement,
+        submitted_at: res.submitted_at,
+      });
+
+      if (email.trim()) {
+        const emailResponse = await sendReportConfirmationEmail({
+          reportId: res.report_id,
+          reporterName: name,
+          recipientEmail: email,
+          category,
+          description,
+          acknowledgement: res.acknowledgement,
+        });
+        setEmailStatus(emailResponse);
+      } else {
+        setEmailStatus({ success: false, message: 'No email entered. Confirmation email not sent.' });
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -245,6 +334,15 @@ function ReportForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
+        <input
+          className="rounded-lg border border-[var(--paper-line)] p-2 text-sm"
+          placeholder="Your email for confirmation"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3 mb-2">
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
@@ -270,6 +368,11 @@ function ReportForm() {
         {loading ? 'Submitting…' : 'Submit report'}
       </button>
       {error && <p className="text-sm text-[var(--alert)] mt-2">{error}</p>}
+      {emailStatus && (
+        <p className={`text-sm mt-2 ${emailStatus.success ? 'text-[var(--safe)]' : 'text-[var(--alert)]'}`}>
+          {emailStatus.message}
+        </p>
+      )}
       {result && (
         <div className="mt-3 text-sm bg-[var(--paper)] rounded-lg p-3 border border-[var(--paper-line)] space-y-2">
           <p className="font-mono text-xs text-[var(--saffron)]">{result.report_id}</p>
@@ -284,7 +387,58 @@ function ReportForm() {
   );
 }
 
+function ReportHistory({ reports }) {
+  if (!reports.length) {
+    return (
+      <SectionCard eyebrow="Report history" title="Recent submissions">
+        <p className="text-sm text-[var(--ink-text)]/70">No reports have been submitted in this browser session yet.</p>
+      </SectionCard>
+    );
+  }
+
+  return (
+    <SectionCard eyebrow="Report history" title="Recent submissions">
+      <div className="space-y-3">
+        {reports.map((report) => (
+          <div key={report.report_id} className="rounded-2xl border border-[var(--paper-line)] bg-[var(--paper)] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-[var(--ink)]">{report.report_id}</div>
+                <div className="text-xs text-[var(--ink-text)]/70">{report.submitted_at}</div>
+              </div>
+              <div className="text-xs uppercase tracking-[0.2em] text-[var(--saffron)]">{report.category.replace('_', ' ')}</div>
+            </div>
+            <p className="mt-2 text-sm text-[var(--ink-text)]/80">{report.description}</p>
+            <div className="mt-2 text-xs text-[var(--ink-text)]/60">Reporter: {report.reporter_name} {report.email ? `• ${report.email}` : ''}</div>
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}
+
 export default function CitizenPortal() {
+  const [reports, setReports] = useState([]);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem('kshemos_reports');
+    if (stored) {
+      try {
+        setReports(JSON.parse(stored));
+      } catch (e) {
+        setReports([]);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('kshemos_reports', JSON.stringify(reports));
+  }, [reports]);
+
+  function addReport(report) {
+    setReports((existing) => [report, ...existing]);
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div>
@@ -301,7 +455,8 @@ export default function CitizenPortal() {
       <ScamCheck />
       <CurrencyScanner />
       <Assistant />
-      <ReportForm />
+      <ReportForm addReport={addReport} />
+      <ReportHistory reports={reports} />
     </div>
   );
 }
