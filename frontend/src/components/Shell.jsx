@@ -28,10 +28,7 @@ export default function Shell({ portal, setPortal, activeView, setActiveView, ch
             <div className="flex flex-wrap items-center gap-2 bg-[var(--paper)] border border-[var(--paper-line)] rounded-full p-1 text-sm">
               {[
                 { key: 'home', label: 'Home' },
-                { key: 'intelligence', label: 'Intelligence' },
-                { key: 'rule-library', label: 'Rule Library' },
-                { key: 'awareness', label: 'Awareness' },
-                { key: 'how-it-works', label: 'How It Works' },
+                { key: 'toolbox', label: 'Toolbox' },
               ].map((item) => (
                 <button
                   key={item.key}
@@ -67,6 +64,14 @@ export default function Shell({ portal, setPortal, activeView, setActiveView, ch
               >
                 Officer
               </button>
+<button
+                onClick={() => setActiveView('meet')}
+                className={`px-3 py-1 rounded-full font-semibold transition-all duration-200 ${
+                  activeView === 'meet' ? 'bg-[var(--ink)] text-white shadow-sm' : 'text-[var(--ink-text)]/60 hover:bg-white'
+                }`}
+              >
+                Meet
+              </button>
               <button
                 onClick={() => setActiveView('contact')}
                 className={`px-3 py-1 rounded-full font-semibold transition-all duration-200 ${
@@ -81,7 +86,7 @@ export default function Shell({ portal, setPortal, activeView, setActiveView, ch
       </header>
       <main className="flex-1">{children}</main>
       <footer className="text-center text-xs text-[var(--ink-text)]/40 py-6 font-mono">
-        KshemOS — hackathon prototype · stopping fraud before the money moves
+        KshemOS — stopping fraud before the money moves
       </footer>
     </div>
   );

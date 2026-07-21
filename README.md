@@ -368,3 +368,90 @@ Try these scenarios to explore all five agents. The demo runs **end-to-end with 
 ### 2. Counterfeit Currency Agent — Note Scanner
 
 1. In the **Citizen Portal**, upload any photo (JPEG/PNG)
+2. Results show:
+   - **Verdict:** `likely_genuine` / `suspicious` / `inconclusive`
+   - **Confidence score** (0–1)
+   - **Signal breakdown:** edge density, texture uniformity, sharpness, resolution
+   - Detailed reasons explaining each signal
+3. Try sharp, well-lit, high-resolution photos → higher confidence
+4. Try blurry, dark, or small images → flagged as suspicious/inconclusive
+
+### 3. Citizen Assistant — Help & Reporting
+
+1. Ask a question in the **Citizen Assistant** (e.g. *"I got a call from someone saying my parcel has been seized by customs"*)
+2. The assistant responds in plain language with safety guidance
+3. Submit a **report** using the form — note the returned `RPT-XXXX` ID
+4. An email confirmation is sent if EmailJS is configured (optional)
+
+### 4. Fraud Graph Agent — Account Ring Analysis
+
+1. Switch to **Officer Command Center** (top-bar toggle to "Officer")
+2. Go to the **Fraud Graph** view
+3. Try sample account chips: **`ACC-1002`** and **`ACC-1009`** are seeded as likely mule accounts (mule probability > 0.8), linked to flagged accounts `ACC-1001` and `ACC-1008`
+4. The response shows: ring ID, connected accounts, shared signals, and mule probability score
+
+### 5. Officer Copilot — Case Intelligence
+
+1. In the **Officer Command Center**, paste the `RPT-XXXX` ID from step 3
+2. Optionally add a linked account ID (e.g. `ACC-1002`)
+3. The Copilot generates:
+   - **Case summary** with fraud-graph context
+   - **Priority** rating (low / medium / high / critical)
+   - **Suggested next steps** for investigation
+
+---
+
+## Running Tests
+
+### Frontend Rule Engine Tests
+
+```bash
+cd frontend
+npm test
+```
+
+This runs `ruleEngine.test.js` using Node.js native test runner (configured via `"test": "node --test"` in `package.json`).
+
+### Backend
+
+Tests can be run using `pytest` if configured (not yet added — see the blueprint for the intended test strategy).
+
+### Linting
+
+```bash
+cd frontend
+npm run lint          # Uses oxlint (oxlintrc.json)
+```
+
+---
+
+## What's Real vs. What's a Stand-In
+
+Everything runs **end-to-end with zero paid services**, so the demo works even with no API keys configured. Each stand-in is commented in the code with a `PRODUCTION UPGRADE` note pointing at what a real deployment would use instead:
+
+| Agent | This Prototype | Production Upgrade |
+|---|---|---|
+| **Digital Arrest Agent** | Keyword + bag-of-words similarity scoring against a small synthetic scam-script corpus | Whisper for live audio → Sentence-Transformers + FAISS over a large, continuously-updated corpus |
+| **Counterfeit Currency Agent** | Pillow/numpy image heuristics (edge density, texture, sharpness, resolution) | YOLOv11 note/region detector + OCR + reference feature-matching |
+| **Fraud Graph Agent** | In-memory `networkx` graph, seeded with synthetic accounts | Neo4j + Graph Neural Network mule-probability model |
+| **Citizen Assistant / Officer Copilot** | Claude API (falls back to a placeholder string if no key is set) | Same, at production scale with retrieval over full case data |
+| **Data Store** | In-memory Python dict (`store.py`) | PostgreSQL with proper migrations |
+
+---
+
+## Project Status: Built vs. Roadmap
+
+| Feature | Status | Notes |
+|---|---|---|
+| Digital Arrest Agent (transcript-based) | ✅ **Built** | Rule engine in `ruleEngine.js` + backend `scam_detection.py` |
+| Digital Arrest Agent (audio / live call) | 🔜 **Roadmap** | Needs Whisper integration for ASR |
+| Counterfeit Currency Agent (image heuristics) | ✅ **Built** | `currency_scan.py` + browser-side `scanCurrencyImageLocally()` |
+| Counterfeit Currency Agent (YOLO / OCR) | 🔜 **Roadmap** | Needs model training + deployment pipeline |
+| Fraud Graph Agent (networkx) | ✅ **Built** | `fraud_graph.py` + synthetic seed data |
+| Fraud Graph Agent (Neo4j / GNN) | 🔜 **Roadmap** | Needs Neo4j Aura + GNN model |
+| Citizen Assistant (rule-based fallback) | ✅ **Built** | `askCitizenAssistantLocally()` in `ruleEngine.js` |
+| Citizen Assistant (Claude-powered) | ✅ **Built** | `claude_client.py` — works if `ANTHROPIC_API_KEY` is set |
+| Officer Copilot | ✅ **Built** | Case summary + next steps via Claude or local fallback |
+| Web UI (Citizen Portal) | ✅ **Built** | 13+ views, portal toggle, responsive layout |
+| Web UI (Officer Dashboard) | ✅ **Built** | Graph lookup, case review, copilot |
+| Authentication / RBAC | 🔜 **Roadmap** | See blueprint's Security section for JWT/Firebase Auth plan |
