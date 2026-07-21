@@ -1,9 +1,6 @@
 # KshemOS — AI Operating System for Digital Public Safety
 
 **Problem Statement:** AI for Digital Public Safety: Defeating Counterfeiting, Fraud & Digital Arrest Scams
-
-> A note before we start: the original brief asks for 20+ exhaustive sections (100M-user scaling plans, full Neo4j training pipelines, 15-day AI model evaluation reports, etc.). That's real product-company scope, not hackathon scope. What actually wins hackathons is **one sharp idea, demoed convincingly, with a coherent story around it** — judges reward depth-in-one-place over shallow breadth-in-twenty. So this blueprint keeps the ambitious vision (for the pitch and architecture slide) but is honest about what you can *actually build and demo* in a hackathon window, and flags a free-tier stack you can ship on this weekend, given you've been building on Vercel/Firebase Spark/HF Spaces/Colab before. Tell me the exact hackathon duration and team size and I'll tighten the dev plan further.
-
 ---
 
 ## 1. Product Vision & Brand
