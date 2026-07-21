@@ -1,6 +1,6 @@
 # KshemOS — AI Operating System for Digital Public Safety
 
-**Problem Statement:** AI for Digital Public Safety: Defeating Counterfeiting, Fraud & Digital Arrest Scams
+**Focus Area:** AI for Digital Public Safety: Defeating Counterfeiting, Fraud & Digital Arrest Scams
 ---
 
 ## 1. Product Vision & Brand
@@ -15,15 +15,11 @@
 - **Logo idea:** A shield formed by two negative-space arrows converging into a checkmark (protection + verification + convergence of agencies) — navy blue (#0B2545, trust/government) + saffron accent (#FF7A00, alert/India) + white.
 - **Voice:** Calm, authoritative, non-alarmist. Government-adoptable tone — think UIDAI/DigiLocker, not a startup.
 
-**Why this framing scores well on judging criteria:**
-- *Business impact:* frames the product as infrastructure banks/telcos/police can plug into, not a standalone app — much easier "government could actually buy this" story.
-- *Innovation:* the pivot from "detect after loss" to "intervene during the scam" is the single idea to hammer in every slide.
-
 ---
 
-## 2. The One Wow Factor (lead with this in the demo)
+## 2. The Core Differentiator (lead with this in any presentation)
 
-**Live Scam Intervention Score.** While a citizen is mid-call with a "CBI officer" or mid-QR-scan, KshemOS scores the interaction in real time (voice cues + transcript + known scam-script similarity + caller metadata) and pushes a **risk overlay directly onto the citizen's phone** — before they transfer money, not after. This is technically feasible in a hackathon using: Whisper for live transcription → a small classifier/embedding similarity search against a labelled corpus of known scam-call transcripts → a simple risk score → a push notification / overlay UI. It's demoable in under 2 minutes and is the thing judges will remember.
+**Live Scam Intervention Score.** While a citizen is mid-call with a "CBI officer" or mid-QR-scan, KshemOS scores the interaction in real time (voice cues + transcript + known scam-script similarity + caller metadata) and pushes a **risk overlay directly onto the citizen's phone** — before they transfer money, not after. This is technically feasible using: Whisper for live transcription → a small classifier/embedding similarity search against a labelled corpus of known scam-call transcripts → a simple risk score → a push notification / overlay UI. It's demoable in under 2 minutes and is the thing that anchors the whole pitch.
 
 Everything else in this document supports that centerpiece: the graph engine explains *why* a number is a mule account, the counterfeit scanner extends the same "verify before you trust it" idea to physical cash, and the officer dashboard is where the intelligence lands.
 
@@ -89,21 +85,21 @@ flowchart TB
     GW --> REDIS
 ```
 
-**Component notes (kept to what you'd actually justify to a judge):**
-| Component | Role | Hackathon-real choice |
+**Component notes (kept to what you'd actually justify in a technical review):**
+| Component | Role | Practical, buildable choice |
 |---|---|---|
 | API Gateway | Single entry, auth, rate limiting | FastAPI + simple JWT, or Firebase Auth if already using it |
 | Scam Detection Service | Orchestrates ASR → embedding match → classifier → LLM explanation | FastAPI service, Whisper (small/base model), a LightGBM classifier trained on a small labelled/synthetic dataset |
 | Counterfeit Service | Image in, forgery signal out | YOLOv8/11 fine-tuned on currency dataset (Kaggle "Indian currency" datasets exist) + OpenCV texture checks |
-| Fraud Graph Service | Accounts/phones/UPI IDs/devices as nodes, shared-attribute edges | Neo4j Aura Free tier or Neo4j Desktop for demo |
-| Case & Evidence | Stores reports, generates FIR drafts, hashes evidence | Postgres + Claude API for drafting + SHA-256 hash log (skip real chain-of-custody crypto for demo, mention it as roadmap) |
-| Notification | Pushes alerts to citizen/officer | WebSocket or simple polling for demo; mention Kafka as the "production" story |
+| Fraud Graph Service | Accounts/phones/UPI IDs/devices as nodes, shared-attribute edges | Neo4j Aura Free tier or Neo4j Desktop for a working prototype |
+| Case & Evidence | Stores reports, generates FIR drafts, hashes evidence | Postgres + Claude API for drafting + SHA-256 hash log (skip real chain-of-custody crypto for now, mention it as roadmap) |
+| Notification | Pushes alerts to citizen/officer | WebSocket or simple polling initially; mention Kafka as the production-scale story |
 
 ---
 
 ## 4. AI Agents (the multi-agent story)
 
-Keep to 5 real agents you can actually wire up, not 15 that exist only in slides. Each is a distinct FastAPI microservice or a distinct LangGraph node — frame it as "agents" in the pitch regardless of implementation depth.
+Keep to 5 real agents you can actually wire up, not 15 that exist only in slides. Each is a distinct FastAPI microservice or a distinct LangGraph node — frame it as "agents" in the narrative regardless of implementation depth.
 
 | Agent | Purpose | Input | Output | Model |
 |---|---|---|---|---|
@@ -113,7 +109,7 @@ Keep to 5 real agents you can actually wire up, not 15 that exist only in slides
 | **Citizen Assistant** | Multilingual explainer, guided reporting, FIR drafting | Citizen text/voice query | Plain-language answer, draft FIR | Claude API |
 | **Officer Copilot** | Summarizes a case, suggests next investigative step | Case + graph + call data | Case summary, prioritized leads | Claude API over structured case data |
 
-For each, be ready to say out loud: *input → model → output → what it hands off to the next agent.* That "handoff" story (Digital Arrest Agent flags a number → Fraud Graph Agent shows it's linked to 40 other victims → Officer Copilot drafts the case summary) is what makes it feel like an "ecosystem" rather than five demos glued together.
+For each, be ready to explain out loud: *input → model → output → what it hands off to the next agent.* That "handoff" story (Digital Arrest Agent flags a number → Fraud Graph Agent shows it's linked to 40 other victims → Officer Copilot drafts the case summary) is what makes it feel like an "ecosystem" rather than five components glued together.
 
 ---
 
@@ -122,16 +118,16 @@ For each, be ready to say out loud: *input → model → output → what it hand
 **A) "Vision" stack (what you present as the production architecture):**
 Next.js/React/Tailwind/TypeScript, Mapbox, FastAPI, PostgreSQL, Neo4j, Kafka, Redis, Whisper, YOLOv11, Sentence-Transformers, FAISS, Claude API, Docker/Kubernetes on AWS/Azure.
 
-**B) "Actually buildable this weekend, free-tier" stack** (matches how you've built before — Vercel, Firebase Spark, HF Spaces, Colab):
+**B) "Actually buildable now, free-tier" stack** (matches how you've built before — Vercel, Firebase Spark, HF Spaces, Colab):
 - Frontend: Vite + React + Tailwind → **Vercel**
 - Auth: **Firebase Auth** (Spark plan)
 - Backend/AI inference: **FastAPI on Hugging Face Spaces** (or Colab for training/testing the CV + classifier models, exported as a small inference service)
-- Graph: **Neo4j AuraDB Free** tier (has a hard node/relationship cap but plenty for a demo dataset)
+- Graph: **Neo4j AuraDB Free** tier (has a hard node/relationship cap but plenty for a working dataset)
 - Vector search: **FAISS in-process** (no hosted vector DB needed for a demo corpus)
 - LLM: **Anthropic API** for multilingual advisories + FIR drafting + officer summaries
 - Storage: Firebase Firestore/Storage for evidence files (mention hashing, skip building real chain-of-custody)
 
-Say explicitly in the pitch: "here's the production-grade architecture we're designing for, and here's the free-tier stack the working prototype runs on today" — judges respect that distinction far more than pretending K8s+Kafka is running on a laptop.
+Say explicitly when presenting: "here's the production-grade architecture we're designing for, and here's the free-tier stack the working prototype runs on today" — this distinction reads as far more credible than pretending K8s+Kafka is running on a laptop.
 
 ---
 
@@ -139,8 +135,8 @@ Say explicitly in the pitch: "here's the production-grade architecture we're des
 
 ### Digital Arrest / Scam-Call Detection
 - Pipeline: audio → Whisper transcript → check transcript against a small labelled corpus of known scam-call patterns (embeddings + cosine similarity) → feature vector (urgency words, threat words, mentions of "arrest"/"CBI"/"parcel"/"Aadhaar", speaking pace, silence ratio) → LightGBM risk score.
-- For the demo: pre-record 3–4 sample calls (1 genuine bank call, 2–3 scam scripts you write yourselves based on public awareness advisories — never scrape real victim data) and run them live through the pipeline.
-- Be upfront in Q&A: real-time voice-cloning detection is a research-grade problem; for the hackathon, show the *architecture slot* for it (a placeholder classifier) rather than claiming a solved voice-cloning detector — overclaiming here is the fastest way to lose technical-excellence points under questioning.
+- For demonstration: pre-record 3–4 sample calls (1 genuine bank call, 2–3 scam scripts you write yourselves based on public awareness advisories — never scrape real victim data) and run them live through the pipeline.
+- Be upfront in any technical discussion: real-time voice-cloning detection is a research-grade problem; show the *architecture slot* for it (a placeholder classifier) rather than claiming a solved voice-cloning detector — overclaiming here is the fastest way to lose credibility under questioning.
 
 ### Counterfeit Currency
 - YOLO model fine-tuned (transfer learning, a few hours on Colab) on a small currency-image dataset for note detection + region-of-interest crops (security thread, watermark area, serial number).
