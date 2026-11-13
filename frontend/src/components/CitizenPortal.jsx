@@ -629,6 +629,7 @@ function ReportForm({ addReport }) {
         onChange={(e) => setDescription(e.target.value)}
       />
 
+      {/* Submit Button with Loading Spinner & Disabled State */}
       <button
         type="button"
         onClick={submit}
@@ -638,6 +639,7 @@ function ReportForm({ addReport }) {
       >
         {loading ? (
           <>
+            {/* Loading Spinner SVG */}
             <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -649,6 +651,7 @@ function ReportForm({ addReport }) {
         )}
       </button>
 
+      {/* Recoverable Error State with Dismiss Option */}
       {error && (
         <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg flex justify-between items-center text-sm text-[var(--alert)]">
           <span>{error}</span>
@@ -674,6 +677,7 @@ function ReportForm({ addReport }) {
         </p>
       )}
 
+      {/* Success State & Next-Step Feedback */}
       {result && (
         <div className="mt-4 text-sm bg-green-50 rounded-xl p-4 border border-green-200 space-y-2 text-green-900">
           <div className="flex items-center justify-between">
@@ -855,14 +859,66 @@ export default function CitizenPortal({ setActiveView }) {
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setActiveView && setActiveView('live-call-safety')}
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              Launch Live Call Shield
-            </button>
+
+            <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
+              Transcribe Hindi, Tamil, Telugu, and code-switched dialogues
+              with word-level confidence scores and interactive citizen
+              corrections.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            setActiveView && setActiveView('multilingual-speech')
+          }
+          className="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          Open Multilingual ASR
+        </button>
+      </div>
+
+      {/* Public Incident Advisory Subscriptions Quick Launch Banner (Issue 43) */}
+      <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-transparent border border-amber-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
+            📢
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-sm text-[var(--ink)]">
+                Public Safety Incident Advisory Alerts
+              </span>
+
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-amber-600 text-white">
+                Email &amp; In-App Feed
+              </span>
+            </div>
+
+            <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
+              Subscribe to verified police and cyber emergency bulletins by district or topic. Opt into email updates or browse the in-app verified feed.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            setActiveView && setActiveView('advisory-subscriptions')
+          }
+          className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          Subscribe &amp; View Feed
+        </button>
+      </div>
+
+      {/* Live Scam-Call Shield Quick Launch Banner */}
+      <div className="bg-gradient-to-r from-red-500/10 via-amber-500/10 to-transparent border border-red-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
+            🛡️
           </div>
 
           {/* Emergency Financial Kill-Switch Quick Launch Banner */}
@@ -896,17 +952,22 @@ export default function CitizenPortal({ setActiveView }) {
         </div>
       </div>
 
-      {/* Group 2: Verification & Analysis Tools */}
-      <div className="space-y-4 pt-2">
-        <h2 className="font-mono text-xs uppercase tracking-widest text-[var(--ink-text)]/60 px-1">
-          Verification & Core Tools
-        </h2>
+      {/* Regional Threat Mesh Quick Launch Banner */}
+      <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
+            🌐
+          </div>
 
-        {/* Multilingual Speech ASR Banner */}
-        <div className="bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-transparent border border-purple-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-700 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
-              🎙️
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-sm text-[var(--ink)]">
+                Local Area Threat Advisories
+              </span>
+
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-600 text-white">
+                Geofenced Mesh
+              </span>
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -931,25 +992,38 @@ export default function CitizenPortal({ setActiveView }) {
           </button>
         </div>
 
-        {/* Voice Deepfake & Cloned Audio Inspector Banner */}
-        <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-transparent border border-indigo-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
-              🎙️
+        <button
+          type="button"
+          onClick={() =>
+            setActiveView && setActiveView('field-seizure')
+          }
+          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          Open Seizure Companion
+        </button>
+      </div>
+
+      {/* Emergency Financial Kill-Switch Quick Launch Banner */}
+      <div className="bg-gradient-to-r from-red-600/10 via-amber-500/10 to-transparent border border-red-300 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
+            ⚡
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-sm text-[var(--ink)]">
+                Suspect unauthorized debit or shared your credentials?
+              </span>
+
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-red-600 text-white">
+                Kill-Switch & AePS Defense
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-sm text-[var(--ink)]">
-                  Received a suspicious voice note or family emergency call?
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-indigo-600 text-white">
-                  Deepfake Detector
-                </span>
-              </div>
-              <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
-                Verify synthetic voice clones, robotic pitch flatlines, and neural vocoder artifacts before transferring funds.
-              </p>
-            </div>
+
+            <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
+              Access verified one-tap USSD (*99#) & SMS freeze commands for all major banks, lock biometrics against fraud, and generate certified RBI Zero-Liability mitigation receipts.
+            </p>
           </div>
           <button
             type="button"
@@ -979,6 +1053,10 @@ export default function CitizenPortal({ setActiveView }) {
                 View real-time privacy-preserving threat clusters and micro-advisories based on your immediate regional location.
               </p>
             </div>
+
+            <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
+              Verify synthetic voice clones, robotic pitch flatlines, and neural vocoder artifacts before transferring funds.
+            </p>
           </div>
           <button
             type="button"
@@ -989,53 +1067,33 @@ export default function CitizenPortal({ setActiveView }) {
           </button>
         </div>
 
-        {/* Field Device Seizure Verification Banner */}
-        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
-              📱
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-sm text-[var(--ink)]">
-                  Field Seizure & Device Triage Companion
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-emerald-600 text-white">
-                  Offline PWA
-                </span>
-              </div>
-              <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
-                Field officer tool: Photograph seized hardware, log IMEIs/serials, generate offline SHA-256 genesis receipts, and sync to vault.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setActiveView && setActiveView('field-seizure')}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            Open Seizure Companion
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() =>
+            setActiveView && setActiveView('voice-deepfake')
+          }
+          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          Inspect Voice Deepfake
+        </button>
+      </div>
 
-        {/* Phishing Website Takedown Quick Launch Banner */}
-        <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent border border-blue-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
-              🌐
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-sm text-[var(--ink)]">
-                  Spotted a fake bank or police phishing website?
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-blue-600 text-white">
-                  Abuse Takedown
-                </span>
-              </div>
-              <p className="text-xs text-[var(--ink-text)]/70 mt-0.5">
-                Generate certified CERT-In and registrar abuse takedown packages to suspend rogue domains and hosting servers within hours.
-              </p>
+      {/* Phishing Website Takedown Quick Launch Banner */}
+      <div className="bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent border border-blue-200 rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-lg">
+            🌐
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-sm text-[var(--ink)]">
+                Spotted a fake bank or police phishing website?
+              </span>
+
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-blue-600 text-white">
+                Abuse Takedown
+              </span>
             </div>
           </div>
           <button
