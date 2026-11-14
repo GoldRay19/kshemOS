@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Query, Request, status
 
 from app.models import (
     DpdpAuditLogEntry,
+    UnmaskReviewAction,
     PiiSanitizationRequest,
     PiiSanitizationResponse,
     PseudonymizeFeedRequest,
