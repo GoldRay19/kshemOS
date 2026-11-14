@@ -487,6 +487,7 @@ function Assistant() {
 function ReportForm({ addReport }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailConsent, setEmailConsent] = useState(false);
   const [category, setCategory] = useState('scam_call');
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState('English');
@@ -495,6 +496,7 @@ function ReportForm({ addReport }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [emailStatus, setEmailStatus] = useState(null);
+  const [referenceStatus, setReferenceStatus] = useState('');
 
   async function submit() {
     if (!name.trim() || !description.trim()) {
@@ -528,23 +530,20 @@ function ReportForm({ addReport }) {
       addReport({
         report_id: res.report_id,
         reporter_name: name,
-        email,
         category,
         description,
         acknowledgement: res.acknowledgement,
         submitted_at: res.submitted_at,
       });
 
-      if (email.trim()) {
+      if (email.trim() && emailConsent) {
         try {
-          const emailResponse = await sendReportConfirmationEmail({
-            reportId: res.report_id,
-            reporterName: name,
-            recipientEmail: email,
-            category,
-            description,
-            acknowledgement: res.acknowledgement,
-          });
+        const emailResponse = await sendReportConfirmationEmail({
+        reportId: res.report_id,
+        recipientEmail: email,
+       category,
+      submittedAt: res.submitted_at,
+       });
 
           setEmailStatus(emailResponse);
         } catch (emailError) {
@@ -556,18 +555,41 @@ function ReportForm({ addReport }) {
           });
         }
       } else {
-        setEmailStatus({
-          success: false,
-          message: 'No email entered. Confirmation email not sent.',
-        });
-      }
+  setEmailStatus({
+    success: false,
+    message: email.trim()
+      ? 'Confirmation email not sent because consent was not provided.'
+      : 'No email entered. Confirmation email not sent.',
+  });
+}
     } catch (e) {
       setError(e.message || 'Unable to submit your report.');
     } finally {
       setLoading(false);
     }
   }
+async function copyReportReference() {
+  try {
+    await navigator.clipboard.writeText(result.report_id);
+    setReferenceStatus('Report reference copied!');
+  } catch {
+    setReferenceStatus('Unable to copy. Please copy the reference manually.');
+  }
+}
 
+function downloadReportReference() {
+  const file = new Blob(
+    [`KshemOS Report Reference: ${result.report_id}`],
+    { type: 'text/plain' }
+  );
+
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${result.report_id}.txt`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
   return (
     <SectionCard
       eyebrow="Zero-Click Reporting"
@@ -591,7 +613,18 @@ function ReportForm({ addReport }) {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-
+      <label className="flex items-start gap-2 text-sm mt-2">
+  <input
+    type="checkbox"
+    checked={emailConsent}
+    onChange={(e) => setEmailConsent(e.target.checked)}
+    className="mt-1"
+  />
+  <span>
+    I agree to receive a confirmation email about this report.
+    My email address will only be used for this confirmation.
+  </span>
+</label>
       <div className="grid sm:grid-cols-2 gap-3 mb-2">
         <select
           value={category}
@@ -662,7 +695,29 @@ function ReportForm({ addReport }) {
           <p className="font-mono text-xs text-[var(--saffron)]">
             {result.report_id}
           </p>
+         <div className="flex flex-wrap gap-2">
+  <button
+    type="button"
+    onClick={copyReportReference}
+    className="rounded-lg border px-3 py-2 text-xs font-semibold"
+  >
+    Copy reference
+  </button>
 
+  <button
+    type="button"
+    onClick={downloadReportReference}
+    className="rounded-lg border px-3 py-2 text-xs font-semibold"
+  >
+    Download reference
+  </button>
+</div>
+
+{referenceStatus && (
+  <p className="text-xs text-[var(--safe)]">
+    {referenceStatus}
+  </p>
+)}
           <p>{result.acknowledgement}</p>
 
           {result.incident_id && (
@@ -742,7 +797,7 @@ function ReportHistory({ reports }) {
 
             <div className="mt-2 text-xs text-[var(--ink-text)]/60">
               Reporter: {report.reporter_name}{' '}
-              {report.email ? `• ${report.email}` : ''}
+
             </div>
           </div>
         ))}
